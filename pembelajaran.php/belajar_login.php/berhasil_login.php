@@ -7,9 +7,44 @@ if (!isset($_SESSION['username'])) {
 }
 ?>
 
-<form action="logout.php" method="POST" class="login-email">
-    <h1>Selamat datang, <?php echo $_SESSION['username']; ?>!</h1>
-    <div class="input-group">
-        <button type="submit" class="btn">Logout</button>
-    </div>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pendaftaran Ekskul Seni</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h2>FORM BIODATA PENDAFTAR EKSKUL SENI</h2>
+<h3>Selamat datang, <?php echo $_SESSION['username']; ?>!</h3>
+
+<table border="1">
+    <tr>
+        <th>No</th>
+        <th>Nama</th>
+        <th>Kelas</th>
+        <th>NIS</th>
+        <th>Alamat</th>
+        <th>Tempat Lahir</th>
+        <th>Tanggal Lahir</th>
+    </tr>
+
+    <tr>
+        <td><input type="text"></td>
+        <td><input type="text"></td>
+        <td><input type="text"></td>
+        <td><input type="text"></td>
+        <td><input type="text"></td>
+        <td><input type="text"></td>
+        <td><input type="date"></td>
+    </tr>
+</table>
+
+<br>
+
+<form action="logout.php" method="POST">
+    <input type="submit" value="Logout">
 </form>
+
+</body>
+</html>
