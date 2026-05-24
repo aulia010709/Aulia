@@ -1,21 +1,36 @@
 <?php
-include 'koneksi.php';
+// 1. Memulai session untuk menyimpan status login dan hak akses
+session_start();
 
-$username = $_POST['username'];
-$password = md5($_POST['password']);
-
-$query = mysqli_query($koneksi, "SELECT * FROM users WHERE username='$username' AND password='$password'");
-
-if (mysqli_num_rows($query) > 0) {
-    $data = mysqli_fetch_assoc($query);
+// 2. Memeriksa apakah data dikirim dari form login
+if (isset($_POST['username']) && isset($_POST['password'])) {
     
-    // Simpan data ke dalam session
-    $_SESSION['user_id']  = $data['id'];
-    $_SESSION['username'] = $data['username'];
-    $_SESSION['role']     = $data['role'];
+    // Mengambil data yang diketik di halaman login
+    $username = $_POST['username'];
+    $password = $_POST['password'];
 
-    header("location:index.php");
+    // 3. Memeriksa apakah username dan password cocok
+    if ($username === 'aulia' && $password === 'aulia123') {
+        
+        // Simpan status login ke komputer
+        $_SESSION['login'] = true;
+        $_SESSION['username'] = $username;
+        
+        // KUNCI JAWABAN: Tambahkan role admin di sini agar file hapus.php bisa mengizinkanmu masuk
+        $_SESSION['role'] = 'admin'; 
+
+        // Langsung pindah ke halaman utama dashboard
+        header("Location: index.php");
+        exit;
+    } else {
+        echo "<script>
+                alert('Username atau Password Salah!');
+                window.location.href = 'login.php';
+              </script>";
+        exit;
+    }
 } else {
-    echo "<script>alert('Username atau Password salah!'); window.location='login.php';</script>";
+    header("Location: login.php");
+    exit;
 }
 ?>
