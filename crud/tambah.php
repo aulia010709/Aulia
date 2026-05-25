@@ -1,215 +1,133 @@
 <?php
-// 1. Memulai session dan cek login
 session_start();
 if (!isset($_SESSION['login'])) {
     header("Location: login.php");
     exit;
 }
+include 'koneksi.php';
+
+if (isset($_POST['submit'])) {
+    $username = mysqli_real_escape_string($koneksi, $_POST['username']);
+    // Password otomatis disamakan dengan username, bisa diganti sesuai keinginan
+    $password = password_hash($username, PASSWORD_DEFAULT); 
+    $email = mysqli_real_escape_string($koneksi, $_POST['email']);
+    $nama = mysqli_real_escape_string($koneksi, $_POST['nama']);
+    $kelas = mysqli_real_escape_string($koneksi, $_POST['kelas']);
+    $tgl_lahir = mysqli_real_escape_string($koneksi, $_POST['tgl_lahir']);
+    $jenis_tari = mysqli_real_escape_string($koneksi, $_POST['jenis_tari']);
+    $jenis_kelamin = mysqli_real_escape_string($koneksi, $_POST['jenis_kelamin']);
+
+    // Urutan Query INSERT disamakan persis dengan urutan struktur phpMyAdmin kamu
+    $query = "INSERT INTO users (id, username, password, email, nama, kelas, tgl_lahir, jenis_tari, jenis_kelamin) 
+              VALUES ('', '$username', '$password', '$email', '$nama', '$kelas', '$tgl_lahir', '$jenis_tari', '$jenis_kelamin')";
+    
+    $insert = mysqli_query($koneksi, $query);
+
+    if ($insert) {
+        echo "<script>
+                alert('Data Anggota Nyawiji Sukma Berhasil Disimpan!');
+                window.location.href = 'index.php';
+              </script>";
+    } else {
+        echo "<script>
+                alert('Gagal menyimpan data: " . mysqli_error($koneksi) . "');
+              </script>";
+    }
+}
 ?>
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tambah Data Anggota</title>
+    <title>Registrasi Anggota - Nyawiji Sukma</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        * { font-family: 'Poppins', sans-serif; box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #e2e1ec; /* Warna latar belakang ungu abu-abu */
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 120vh; /* Ditambah tingginya agar halaman bisa digeser/di-scroll ke bawah */
-            position: relative;
-            overflow-y: auto; /* Memastikan scrollbar aktif jika layar laptop kecil */
+            background: linear-gradient(135deg, #111115 0%, #070709 100%);
+            margin: 0; padding: 40px 20px;
+            display: flex; flex-direction: column; align-items: center; min-height: 100vh; color: #ffffff;
         }
-
-        /* Kotak Putih Form Pendaftaran */
-        .container {
-            background-color: #ffffff;
-            border-radius: 20px;
-            padding: 40px;
-            width: 100%;
-            max-width: 500px;
-            box-shadow: 0 10px 30px rgba(93, 66, 117, 0.05);
-            z-index: 10;
-            position: relative;
-            
-            /* KUNCI UTAMA: Menggeser dan memberi jarak kotak agar turun ke bawah */
-            margin-top: 70px; 
-            margin-bottom: 70px;
+        .form-card {
+            width: 100%; max-width: 650px; background: rgba(255, 255, 255, 0.01);
+            backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+            border-radius: 28px; padding: 45px; border: 1px solid rgba(255, 255, 255, 0.03);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7);
         }
-
-        h2 {
-            text-align: center;
-            color: #5d4275;
-            font-size: 22px;
-            margin-bottom: 5px;
+        .form-header { display: flex; align-items: center; gap: 15px; margin-bottom: 35px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 20px; }
+        .mini-logo { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #d4af37; background-color: #ffffff; }
+        .form-header h1 { font-size: 22px; color: #ffffff; margin: 0; font-weight: 600; }
+        .form-header p { font-size: 11px; color: #8a8a93; margin: 3px 0 0 0; text-transform: uppercase; letter-spacing: 1.5px; }
+        .input-group { margin-bottom: 22px; }
+        .input-group label { display: block; font-size: 12px; color: #a1a1aa; margin-bottom: 8px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; }
+        .input-group input, .input-group select {
+            width: 100%; padding: 14px 16px; background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; color: #ffffff; font-size: 14px; outline: none; transition: all 0.3s ease;
         }
-
-        p.subtitle {
-            text-align: center;
-            color: #aaa7be;
-            font-size: 13px;
-            margin: 0 0 30px 0;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #4e4a66;
-            font-size: 14px;
-            font-weight: 600;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid #cccaf0;
-            border-radius: 10px;
-            box-sizing: border-box;
-            font-size: 14px;
-            color: #4e4a66;
-            background-color: #fcfbfe;
-            transition: 0.3s;
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: #7d52a8;
-            background-color: #ffffff;
-        }
-
-        /* Tombol Simpan Berwarna Ungu */
-        .btn-submit {
-            background-color: #7d52a8;
-            color: white;
-            border: none;
-            width: 100%;
-            padding: 14px;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(125, 82, 168, 0.2);
-            transition: 0.3s;
-            margin-top: 10px;
-        }
-
-        .btn-submit:hover {
-            background-color: #643f8a;
-        }
-
-        .btn-kembali {
-            display: block;
-            text-align: center;
-            text-decoration: none;
-            color: #7d7a96;
-            font-size: 13px;
-            margin-top: 15px;
-        }
-
-        .btn-kembali:hover {
-            text-decoration: underline;
-        }
-
-        /* Efek Bunga Sakura */
-        .sakura-ambience {
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            z-index: 1;
-            pointer-events: none;
-        }
-
-        .petal {
-            position: absolute;
-            font-size: 20px;
-            opacity: 0.5;
-            animation: drift linear infinite;
-        }
-
-        @keyframes drift {
-            0% { transform: translateY(-20px) rotate(0deg); opacity: 0.6; }
-            100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
-        }
+        .input-group input:focus, .input-group select:focus { border-color: #d4af37; background: rgba(255, 255, 255, 0.06); box-shadow: 0 0 12px rgba(212, 175, 55, 0.2); }
+        .input-group select option { background-color: #141419; color: #ffffff; }
+        .action-row { display: flex; gap: 15px; margin-top: 35px; }
+        .btn-submit { flex: 2; background: linear-gradient(135deg, #d4af37 0%, #b38f1d 100%); color: #0d0d11; padding: 14px; border: none; border-radius: 14px; font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: 0 8px 25px rgba(212, 175, 55, 0.3); transition: all 0.3s ease; }
+        .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 12px 25px rgba(212, 175, 55, 0.45); }
+        .btn-cancel { flex: 1; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); color: #a1a1aa; padding: 14px; border-radius: 14px; text-align: center; text-decoration: none; font-size: 14px; font-weight: 500; }
+        .btn-cancel:hover { background: rgba(255, 255, 255, 0.08); color: #ffffff; }
     </style>
 </head>
 <body>
-
-    <div class="sakura-ambience" id="sakuraContainer"></div>
-
-    <div class="container">
-        <h2>🌸 Tambah Data Anggota 🌸</h2>
-        <p class="subtitle">Masukkan data baru anggota eskul seni tari</p>
-        
-        <form action="proses_tambah.php" method="POST">
-            <div class="form-group">
-                <label>Nama Lengkap</label>
-                <input type="text" name="nama" class="form-control" required placeholder="Masukkan nama lengkap">
+    <div class="form-card">
+        <div class="form-header">
+            <img src="logo - Copy.jpg" alt="Logo" class="mini-logo">
+            <div>
+                <h1>Tambah Anggota Baru</h1>
+                <p>Nyawiji Sukma </p>
             </div>
+        </div>
 
-            <div class="form-group">
+        <form action="" method="POST">
+            <div class="input-group">
+                <label>Nama Lengkap </label>
+                <input type="text" name="nama" placeholder="Masukkan nama lengkap..." required>
+            </div>
+            <div class="input-group">
                 <label>Kelas</label>
-                <select name="kelas" class="form-control" required>
-                    <option value="">-- Pilih Kelas --</option>
-                    <option value="X TJKT 3">X TJKT 3</option>
-                    <option value="X TJKT 4">X TJKT 4</option>
-                    <option value="XI TJKT 4">XI TJKT 4</option>
-                </select>
+                <input type="text" name="kelas" placeholder="Contoh: XI-TJKT-1" required>
             </div>
-
-            <div class="form-group">
-                <label>Spesialisasi Tari</label>
-                <select name="spesialisasi" class="form-control" required>
+            <div class="input-group">
+                <label>Tanggal Lahir</label>
+                <input type="date" name="tgl_lahir" required>
+            </div>
+            <div class="input-group">
+                <label>Jenis Tari</label>
+                <select name="jenis_tari" required>
+                    <option value="" disabled selected>-- Pilih Kategori Tari --</option>
                     <option value="Tradisional">Tradisional</option>
-                    <option value="Modern">Modern</option>
+                    <option value="Modern Dance">Modern Dance</option>
                     <option value="Kontemporer">Kontemporer</option>
                 </select>
             </div>
-
-            <div class="form-group">
-                <label>Gender</label>
-                <select name="gender" class="form-control" required>
+            <div class="input-group">
+                <label>Jenis Kelamin</label>
+                <select name="jenis_kelamin" required>
+                    <option value="" disabled selected>-- Pilih Jenis Kelamin --</option>
                     <option value="Perempuan">Perempuan</option>
                     <option value="Laki-laki">Laki-laki</option>
                 </select>
             </div>
-
-            <div class="form-group">
-                <label>ID Pengguna (Username)</label>
-                <input type="text" name="username" class="form-control" required placeholder="Masukkan username">
+            <div class="input-group">
+                <label>Username</label>
+                <input type="text" name="username" placeholder="Buat nama pengguna..." required>
             </div>
-
-            <div class="form-group">
-                <label>Email</label>
-                <input type="email" name="email" class="form-control" required placeholder="contoh@gmail.com">
+            <div class="input-group">
+                <label>Alamat Email</label>
+                <input type="email" name="email" placeholder="contoh@domain.com" required>
             </div>
-
-            <button type="submit" class="btn-submit">Simpan Data Member</button>
-            <a href="index.php" class="btn-kembali">Batal & Kembali</a>
+            <div class="action-row">
+                <a href="index.php" class="btn-cancel">Batal</a>
+                <button type="submit" name="submit" class="btn-submit">Simpan Anggota</button>
+            </div>
         </form>
     </div>
-
-    <script>
-        const container = document.getElementById('sakuraContainer');
-        for (let i = 0; i < 15; i++) {
-            const petal = document.createElement('div');
-            petal.classList.add('petal');
-            petal.innerText = '🌸';
-            petal.style.left = Math.random() * 100 + 'vw';
-            petal.style.animationDuration = Math.random() * 4 + 5 + 's';
-            petal.style.animationDelay = Math.random() * 4 + 's';
-            container.appendChild(petal);
-        }
-    </script>
 </body>
 </html>

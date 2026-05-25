@@ -6,7 +6,7 @@ if (!isset($_SESSION['login'])) {
     exit;
 }
 
-// 2. Hubungkan ke file koneksi database
+// 2. Hubungkan ke database
 include 'koneksi.php';
 
 // Mengambil data dari tabel users
@@ -19,114 +19,151 @@ $result = mysqli_query($koneksi, $query);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Informasi Seni Tari</title>
+    <title>Nyawiji Sukma - Dance Management System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
+        * {
+            font-family: 'Poppins', sans-serif;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #e2e1ec;
+            /* Perubahan Warna Latar Belakang: Mengikuti Hitam Pekat Logo Nyawiji Sukma */
+            background: linear-gradient(135deg, #111115 0%, #070709 100%);
             margin: 0;
-            padding: 30px 20px;
+            padding: 40px 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
-            position: relative;
-            overflow-x: hidden;
+            color: #ffffff;
         }
 
+        /* Top Bar / Navigasi Mewah */
         .navbar-top {
             width: 100%;
-            max-width: 1050px;
-            background-color: #ffffff;
-            padding: 18px 30px;
-            border-radius: 14px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+            max-width: 1200px;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 15px 30px;
+            border-radius: 20px;
+            border: 1px solid rgba(212, 175, 55, 0.2); /* Sentuhan Garis Emas */
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-sizing: border-box;
-            margin-bottom: 25px;
-            z-index: 10;
-            position: relative;
+            margin-bottom: 35px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .main-logo {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #d4af37; /* Bingkai Emas Logo */
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+            background-color: #ffffff;
+        }
+
+        .brand-text-area {
+            display: flex;
+            flex-direction: column;
         }
 
         .brand-title {
-            color: #5d4275; 
+            color: #d4af37; /* Text Emas Nyawiji Sukma */
             font-weight: 700;
-            font-size: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            font-size: 18px;
             margin: 0;
+            letter-spacing: 1px;
+        }
+
+        .brand-subtitle {
+            color: #8a8a93;
+            font-size: 11px;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
 
         .btn-keluar {
-            border: 1px solid #cccaf0;
-            background: transparent;
-            color: #7d7a96;
-            padding: 8px 18px;
-            border-radius: 6px;
+            background: rgba(255, 78, 78, 0.05);
+            border: 1px solid rgba(255, 78, 78, 0.25);
+            color: #ff6b6b;
+            padding: 10px 22px;
+            border-radius: 12px;
             text-decoration: none;
             font-size: 12px;
             font-weight: 600;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
         }
 
         .btn-keluar:hover {
-            background-color: #fceeed;
-            color: #d9534f;
-            border-color: #f5c6cb;
+            background-color: #ff4e4e;
+            color: white;
+            box-shadow: 0 5px 20px rgba(255, 78, 78, 0.4);
+            transform: translateY(-2px);
         }
 
+        /* Card Utama Bergaya Glassmorphism */
         .white-card {
             width: 100%;
-            max-width: 1050px;
-            background-color: #ffffff;
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 10px 30px rgba(93, 66, 117, 0.04);
-            box-sizing: border-box;
-            z-index: 10;
-            position: relative;
+            max-width: 1200px;
+            background: rgba(255, 255, 255, 0.01);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border-radius: 28px;
+            padding: 45px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7);
         }
 
         .card-header-area {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 30px;
+            align-items: center;
+            margin-bottom: 40px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 25px;
         }
 
         .title-section h1 {
-            color: #5d4275;
-            font-size: 24px;
+            color: #ffffff;
+            font-size: 26px;
             margin: 0 0 6px 0;
-            font-weight: 700;
-            border-left: 4px solid #7d52a8;
-            padding-left: 15px;
+            font-weight: 600;
         }
 
         .title-section p {
-            color: #aaa7be;
-            font-size: 12px;
+            color: #8a8a93;
+            font-size: 13px;
             margin: 0;
-            padding-left: 15px;
         }
 
+        /* Tombol Registrasi Berwarna Emas Logo */
         .btn-add-member {
-            background-color: #7d52a8;
-            color: white;
-            padding: 12px 22px;
-            border-radius: 10px;
+            background: linear-gradient(135deg, #d4af37 0%, #b38f1d 100%);
+            color: #0d0d11;
+            padding: 13px 26px;
+            border-radius: 14px;
             text-decoration: none;
             font-size: 13px;
-            font-weight: 600;
-            box-shadow: 0 4px 12px rgba(125, 82, 168, 0.2);
+            font-weight: 700;
+            box-shadow: 0 8px 25px rgba(212, 175, 55, 0.3);
             transition: all 0.3s ease;
         }
 
         .btn-add-member:hover {
-            background-color: #643f8a;
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(212, 175, 55, 0.5);
         }
 
         .table-responsive {
@@ -134,119 +171,147 @@ $result = mysqli_query($koneksi, $query);
             width: 100%;
         }
 
+        /* Tabel Gaya Melayang Hitam Eksklusif */
         table {
             width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-            border: 1px solid #e3def2; 
+            border-collapse: separate;
+            border-spacing: 0 12px;
         }
 
         table th {
-            color: #7d52a8;
-            background-color: #fcfbfe; 
-            font-weight: 600;
-            font-size: 13px;
-            padding: 15px 12px;
+            color: #a1a1aa;
+            font-weight: 500;
+            font-size: 12px;
+            padding: 12px 15px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border-bottom: 2px solid #e3def2;
-            border-right: 1px solid #e3def2;
+            letter-spacing: 1.5px;
+            border: none;
         }
 
         table td {
-            padding: 15px 12px;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 18px 15px;
             font-size: 14px;
-            color: #4e4a66;
-            border-bottom: 1px solid #e3def2;
-            border-right: 1px solid #e3def2;
+            color: #e4e4e7;
+            border-top: 1px solid rgba(255, 255, 255, 0.01);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.01);
+            transition: all 0.25s ease;
         }
 
-        table th:last-child, table td:last-child {
-            border-right: none;
+        table tr td:first-child {
+            border-left: 1px solid rgba(255, 255, 255, 0.01);
+            border-top-left-radius: 16px;
+            border-bottom-left-radius: 16px;
+            font-weight: 600;
+            color: #d4af37; /* Nomor Urut Emas */
+            text-align: center;
         }
 
+        table tr td:last-child {
+            border-right: 1px solid rgba(255, 255, 255, 0.01);
+            border-top-right-radius: 16px;
+            border-bottom-right-radius: 16px;
+        }
+
+        /* Efek Hover Baris Bersinar Emas */
         table tr:hover td {
-            background-color: #faf9fe;
+            background: rgba(255, 255, 255, 0.05);
+            color: #ffffff;
+            transform: scale(1.002);
+            border-color: rgba(212, 175, 55, 0.25);
         }
 
-        .text-tari {
-            color: #e35283; 
+        .text-nama {
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        /* Kapsul Jenis Tari Warna Emas Logo */
+        .badge-tari {
+            background: rgba(212, 175, 55, 0.08);
+            color: #e5c158;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+            border: 1px solid rgba(212, 175, 55, 0.2);
+        }
+
+        /* Text Tanggal Lahir */
+        .text-tanggal {
+            color: #d4af37;
             font-weight: 500;
+            font-size: 13px;
         }
 
         .action-container {
             display: flex;
             gap: 15px;
-            justify-content: center;
         }
 
-        .btn-action-edit, .btn-action-delete {
-            color: #e35283; 
+        .btn-action-edit {
+            color: #e5c158; 
             text-decoration: none;
             font-weight: 600;
             font-size: 13px;
             transition: 0.2s;
         }
 
-        .btn-action-edit:hover, .btn-action-delete:hover {
-            color: #b0365f; 
-            text-decoration: underline;
+        .btn-action-edit:hover {
+            color: #ffffff;
+            text-shadow: 0 0 8px #e5c158;
         }
 
-        /* Dekorasi kelopak bunga sakura pelengkap */
-        .sakura-ambience {
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            z-index: 1; 
-            pointer-events: none;
+        .btn-action-delete {
+            color: #ff6b6b; 
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 13px;
+            transition: 0.2s;
         }
 
-        .petal {
-            position: absolute;
-            font-size: 20px;
-            opacity: 0.6;
-            animation: drift linear infinite;
-            user-select: none;
-        }
-
-        @keyframes drift {
-            0% { transform: translateY(-20px) rotate(0deg); opacity: 0.7; }
-            100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+        .btn-action-delete:hover {
+            color: #ff4e4e;
+            text-shadow: 0 0 8px #ff6b6b;
         }
     </style>
 </head>
 <body>
 
-    <div class="sakura-ambience" id="sakuraContainer"></div>
-
     <div class="navbar-top">
-        <h2 class="brand-title">💃 ESKUL SENI TARI 🌸</h2>
-        <a href="logout.php" class="btn-keluar" onclick="return confirm('Apakah anda yakin ingin keluar sistem?')">Keluar Sistem</a>
+        <div class="logo-container">
+            <img src="logo - Copy.jpg" alt="Logo Nyawiji Sukma" class="main-logo">
+            <div class="brand-text-area">
+                <h2 class="brand-title">NYAWIJI SUKMA</h2>
+                <span class="brand-subtitle">Seni Tari </span>
+            </div>
+        </div>
+        <a href="logout.php" class="btn-keluar" onclick="return confirm('Apakah anda yakin ingin keluar dari sistem?')">Keluar Sistem</a>
     </div>
 
     <div class="white-card">
         <div class="card-header-area">
             <div class="title-section">
-                <h1>Daftar Anggota & Kategori eskul Tari</h1>
-                <p>Manajemen data biodata eskul seni tari</p>
+                <h1>Daftar Anggota & Kategori Tari</h1>
+                <p>Data administrasi keanggotaan eskul seni tari</p>
             </div>
-            <a href="tambah.php" class="btn-add-member">+ Tambah Anggota</a>
+            <a href="tambah.php" class="btn-add-member">+ Registrasi Anggota</a>
         </div>
 
         <div class="table-responsive">
             <table>
                 <thead>
                     <tr>
-                        <th style="width: 50px;">NO</th>
+                        <th style="width: 60px; text-align: center;">NO</th>
                         <th>NAMA LENGKAP</th>
                         <th>KELAS</th>
-                        <th>JENIS TARI</th> <th>GENDER</th>
+                        <th>TANGGAL LAHIR</th> <th>JENIS TARI</th>
+                        <th>GENDER</th>
                         <th>ID PENGGUNA</th>
                         <th>EMAIL</th>
-                        <th style="text-align: center; width: 140px;">AKSI MANAJEMEN</th>
+                        <th style="width: 120px;">AKSI</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -255,56 +320,57 @@ $result = mysqli_query($koneksi, $query);
                     if ($result && mysqli_num_rows($result) > 0) {
                         while($row = mysqli_fetch_assoc($result)) : 
                             
-                            // Ambil ID otomatis dari kolom index pertama
                             $val_id = current($row); 
-
-                            // 1. Ambil data nama lengkap
                             $val_nama = isset($row['nama']) ? $row['nama'] : (isset($row['nama_lengkap']) ? $row['nama_lengkap'] : '');
-                            
-                            // 2. Ambil data kelas
                             $val_kelas = isset($row['kelas']) ? $row['kelas'] : '';
                             
-                            // 3. KUNCI MEMUNCULKAN JENIS TARI: Deteksi nama kolom alternatif di phpMyAdmin
-                            $val_tari = '';
-                            if (isset($row['jenis_tari'])) {
-                                $val_tari = $row['jenis_tari'];
-                            } elseif (isset($row['tari'])) {
-                                $val_tari = $row['tari'];
-                            } elseif (isset($row['spesialisasi'])) {
-                                $val_tari = $row['spesialisasi'];
-                            } elseif (isset($row['kategori'])) {
-                                $val_tari = $row['kategori'];
+                            // 1. SISTEM DETEKSI OTOMATIS TANGGAL LAHIR
+                            $val_tanggal = '';
+                            if (isset($row['tanggal_lahir'])) {
+                                $val_tanggal = $row['tanggal_lahir'];
+                            } elseif (isset($row['tgl_lahir'])) {
+                                $val_tanggal = $row['tgl_lahir'];
+                            } elseif (isset($row['lahir'])) {
+                                $val_tanggal = $row['lahir'];
                             } else {
-                                // Jika tidak cocok, ambil nilai kolom urutan ke-4
+                                // Jika nama kolom tidak terdeteksi, ambil data dari index kolom ke-3 (opsional)
                                 $array_values = array_values($row);
-                                $val_tari = isset($array_values[3]) ? $array_values[3] : '';
+                                $val_tanggal = isset($array_values[2]) ? $array_values[2] : '-';
+                            }
+                            // Mengubah format tanggal Indonesia (jika datanya berbentuk YYYY-MM-DD)
+                            if($val_tanggal != '-' && strtotime($val_tanggal)) {
+                                $val_tanggal = date('d-m-Y', strtotime($val_tanggal));
                             }
 
-                            // 4. KUNCI MEMUNCULKAN GENDER: Deteksi nama kolom alternatif di phpMyAdmin
-                            $val_gender = '';
-                            if (isset($row['jenis_kelamin'])) {
-                                $val_gender = $row['jenis_kelamin'];
-                            } elseif (isset($row['jk'])) {
-                                $val_gender = $row['jk'];
-                            } elseif (isset($row['gender'])) {
-                                $val_gender = $row['gender'];
-                            } else {
-                                // Jika tidak cocok, ambil nilai kolom urutan ke-5
+                            // 2. Deteksi otomatis kolom Jenis Tari
+                            $val_tari = isset($row['jenis_tari']) ? $row['jenis_tari'] : (isset($row['tari']) ? $row['tari'] : (isset($row['spesialisasi']) ? $row['spesialisasi'] : ''));
+                            if (empty($val_tari)) {
                                 $array_values = array_values($row);
-                                $val_gender = isset($array_values[4]) ? $array_values[4] : '';
+                                $val_tari = isset($array_values[4]) ? $array_values[4] : '';
                             }
 
-                            // 5. Ambil data username & email
+                            // 3. Deteksi otomatis kolom Gender
+                            $val_gender = isset($row['jenis_kelamin']) ? $row['jenis_kelamin'] : (isset($row['jk']) ? $row['jk'] : (isset($row['gender']) ? $row['gender'] : ''));
+                            if (empty($val_gender)) {
+                                $array_values = array_values($row);
+                                $val_gender = isset($array_values[5]) ? $array_values[5] : '';
+                            }
+
                             $val_user = isset($row['username']) ? $row['username'] : '';
                             $val_email = isset($row['email']) ? $row['email'] : '';
                     ?>
                     <tr>
-                        <td><?php echo $no++; ?></td>
-                        <td><b><?php echo $val_nama; ?></b></td>
-                        <td><?php echo $val_kelas; ?></td>
-                        <td><span class="text-tari"><?php echo $val_tari; ?></span></td> <td><?php echo $val_gender; ?></td> <td><?php echo $val_user; ?></td>
-                        <td><span style="color:#7d7a96; font-size:13px;"><?php echo $val_email; ?></span></td>
-                        <td align="center">
+                        <td align="center"><?php echo $no++; ?></td>
+                        <td><span class="text-nama"><?php echo $val_nama; ?></span></td>
+                        <td style="text-transform: uppercase; color: #a1a1aa; font-size: 13px;"><?php echo $val_kelas; ?></td>
+                        
+                        <td><span class="text-tanggal">📅 <?php echo $val_tanggal; ?></span></td>
+                        
+                        <td><span class="badge-tari">💃 <?php echo $val_tari; ?></span></td>
+                        <td><?php echo $val_gender; ?></td>
+                        <td style="color: #a1a1aa; font-size: 13px;">@<?php echo $val_user; ?></td>
+                        <td style="color: #71717a; font-size: 13px;"><?php echo $val_email; ?></td>
+                        <td>
                             <div class="action-container">
                                 <a href="edit.php?id=<?php echo $val_id; ?>" class="btn-action-edit">Ubah</a>
                                 <a href="hapus.php?id=<?php echo $val_id; ?>" class="btn-action-delete" onclick="return confirm('Hapus data ini?')">Hapus</a>
@@ -314,7 +380,7 @@ $result = mysqli_query($koneksi, $query);
                     <?php 
                         endwhile; 
                     } else {
-                        echo "<tr><td colspan='8' align='center' style='color:#999; padding:30px;'>Belum ada data anggota.</td></tr>";
+                        echo "<tr><td colspan='9' align='center' style='color:#71717a; padding:40px;'>Belum ada data anggota yang tersimpan.</td></tr>";
                     }
                     ?>
                 </tbody>
@@ -322,17 +388,5 @@ $result = mysqli_query($koneksi, $query);
         </div>
     </div>
 
-    <script>
-        const container = document.getElementById('sakuraContainer');
-        for (let i = 0; i < 20; i++) {
-            const petal = document.createElement('div');
-            petal.classList.add('petal');
-            petal.innerText = '🌸';
-            petal.style.left = Math.random() * 100 + 'vw';
-            petal.style.animationDuration = Math.random() * 4 + 4 + 's';
-            petal.style.animationDelay = Math.random() * 5 + 's';
-            container.appendChild(petal);
-        }
-    </script>
 </body>
 </html>

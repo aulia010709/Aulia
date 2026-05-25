@@ -1,207 +1,221 @@
+<?php
+// 1. Memulai session
+session_start();
+
+// Jika admin sudah dalam kondisi login, langsung lempar ke dashboard utama
+if (isset($_SESSION['login'])) {
+    header("Location: index.php");
+    exit;
+}
+
+// 2. Hubungkan ke database
+include 'koneksi.php';
+
+if (isset($_POST['login'])) {
+    $username = mysqli_real_escape_string($koneksi, $_POST['username']);
+    $password = $_POST['password'];
+
+    // Mencari akun berdasarkan username di tabel users kamu
+    $result = mysqli_query($koneksi, "SELECT * FROM users WHERE username = '$username'");
+
+    // Cek apakah username tersebut terdaftar
+    if (mysqli_num_rows($result) === 1) {
+        $row = mysqli_fetch_assoc($result);
+        
+        /* SISTEM VERIFIKASI DUAL MODE (Aman & Fleksibel):
+           Bisa membaca password teks biasa (plain text) maupun yang terenkripsi (password_hash).
+        */
+        if (password_verify($password, $row['password']) || $password === $row['password']) {
+            // Set session tanda login berhasil
+            $_SESSION['login'] = true;
+            $_SESSION['username'] = $row['username'];
+            
+            header("Location: index.php");
+            exit;
+        }
+    }
+    
+    // Jika salah, aktifkan tanda error
+    $error = true;
+}
+?>
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Eskul Seni Tari</title>
+    <title>Sistem Login - Nyawiji Sukma</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        /* Mengatur font dan background halaman mirip dengan dashboard */
+        * {
+            font-family: 'Poppins', sans-serif;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f2f8; /* Warna latar ungu sangat pudar */
+            /* Latar belakang gelap arang mengikuti identitas logo Nyawiji Sukma */
+            background: linear-gradient(135deg, #111115 0%, #070709 100%);
+            margin: 0;
+            padding: 20px;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
-            position: relative;
-            overflow: hidden; /* Mencegah scroll saat bunga berterbangan */
+            min-height: 100vh;
+            color: #ffffff;
         }
 
-        /* Dekorasi Bunga Statis di Pojok */
-        .decor-bunga-statis {
-            position: absolute;
-            font-size: 40px;
-            opacity: 0.15;
-            pointer-events: none;
-            user-select: none;
-        }
-        .bunga-s1 { top: 20px; left: 20px; }
-        .bunga-s2 { bottom: 30px; right: 30px; }
-
-        /* Membuat kotak form putih dengan sudut membulat seperti tabel dashboard */
-        .login-container {
-            background-color: #ffffff;
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); /* Bayangan sangat halus */
+        /* Kotak Login Transparan Mewah (Glassmorphism) */
+        .login-card {
             width: 100%;
-            max-width: 380px;
-            z-index: 10; /* Agar di atas bunga yang berterbangan */
-            position: relative;
-        }
-
-        /* Mengatur bagian judul */
-        .login-header {
+            max-width: 420px;
+            background: rgba(255, 255, 255, 0.01);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border-radius: 28px;
+            padding: 45px 35px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7);
             text-align: center;
-            margin-bottom: 30px;
         }
 
-        .login-header h2 {
-            margin: 0 0 8px 0;
-            color: #6a4c93; /* Warna ungu senada dengan teks di dashboard */
-            font-size: 24px;
-        }
-
-        .login-header p {
-            margin: 0;
-            font-size: 14px;
-            color: #888;
-        }
-
-        /* Mengatur jarak antar inputan */
-        .form-group {
+        /* Tampilan Logo Utama di Atas Form */
+        .login-logo {
+            width: 85px;
+            height: 85px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #d4af37; /* Bingkai Keemasan murni */
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+            background-color: #ffffff;
             margin-bottom: 20px;
         }
 
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #555;
-            font-size: 13px;
-            font-weight: 600;
+        .login-card h1 {
+            font-size: 24px;
+            color: #ffffff;
+            margin: 0 0 5px 0;
+            font-weight: 700;
+            letter-spacing: 0.5px;
         }
 
-        /* Gaya kotak input (kotak ketik) */
-        .form-group input {
+        .login-card p {
+            font-size: 11px;
+            color: #8a8a93;
+            margin: 0 0 35px 0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* Desain Kolom Isian Form */
+        .input-group {
+            margin-bottom: 24px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 11px;
+            color: #a1a1aa;
+            margin-bottom: 8px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .input-group input {
             width: 100%;
-            padding: 12px 15px;
-            border: 1px solid #e0dced;
-            border-radius: 8px;
-            box-sizing: border-box;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            color: #ffffff;
             font-size: 14px;
-            background-color: #faf9fc;
+            outline: none;
             transition: all 0.3s ease;
         }
 
-        /* Efek saat kotak input diklik/sedang mengetik */
-        .form-group input:focus {
-            border-color: #6a4c93;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(106, 76, 147, 0.1);
-            background-color: #ffffff;
+        /* Efek Berpendar Emas Saat Input Diklik/Fokus */
+        .input-group input:focus {
+            border-color: #d4af37;
+            background: rgba(255, 255, 255, 0.06);
+            box-shadow: 0 0 12px rgba(212, 175, 55, 0.2);
         }
 
-        /* Gaya tombol ungu senada dengan tombol "+ Tambah Anggota" */
+        /* Notifikasi Alert Error Jika Gagal Login */
+        .error-alert {
+            background: rgba(255, 78, 78, 0.1);
+            border: 1px solid rgba(255, 78, 78, 0.2);
+            color: #ff6b6b;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        /* Tombol Masuk Bertema Gradasi Emas Nyawiji Sukma */
         .btn-login {
             width: 100%;
+            background: linear-gradient(135deg, #d4af37 0%, #b38f1d 100%);
+            color: #0d0d11;
             padding: 14px;
-            background-color: #6a4c93; 
-            color: white;
             border: none;
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: bold;
+            border-radius: 14px;
+            font-size: 14px;
+            font-weight: 700;
             cursor: pointer;
-            transition: background-color 0.3s;
+            box-shadow: 0 8px 25px rgba(212, 175, 55, 0.3);
+            transition: all 0.3s ease;
             margin-top: 10px;
         }
 
         .btn-login:hover {
-            background-color: #543a75; /* Warna ungu lebih gelap saat di-hover */
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(212, 175, 55, 0.45);
         }
 
-        /* ==============================
-           GAYA UNTUK BUNGA BERTERBANGAN
-           ============================== */
-        .falling-flowers {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            z-index: 1;
-            pointer-events: none;
-        }
-
-        .flower {
-            position: absolute;
-            background-color: transparent;
-            font-size: 18px;
-            opacity: 0.7;
-            animation: fall linear infinite;
-        }
-
-        @keyframes fall {
-            0% {
-                transform: translate(0, -10px) rotate(0deg);
-                opacity: 0.7;
-            }
-            25% {
-                transform: translate(60px, 25vh) rotate(90deg);
-            }
-            50% {
-                transform: translate(0px, 50vh) rotate(180deg);
-                opacity: 0.5;
-            }
-            75% {
-                transform: translate(60px, 75vh) rotate(270deg);
-            }
-            100% {
-                transform: translate(0px, 100vh) rotate(360deg);
-                opacity: 0;
-            }
+        /* Footer Keterangan Tambahan Swasta */
+        .login-footer {
+            margin-top: 35px;
+            font-size: 11px;
+            color: #52525b;
         }
     </style>
 </head>
 <body>
 
-    <div class="decor-bunga-statis bunga-s1">🌸</div>
-    <div class="decor-bunga-statis bunga-s2">🌸</div>
+    <div class="login-card">
+        <img src="logo - Copy.jpg" alt="Logo Nyawiji Sukma" class="login-logo">
+        
+        <h1>NYAWIJI SUKMA</h1>
+        <p>Seni Tari Portal Admin</p>
 
-    <div class="falling-flowers" id="fallingFlowers"></div>
+        <?php if (isset($error)) : ?>
+            <div class="error-alert">
+                ❌ Username atau Password salah!
+            </div>
+        <?php endif; ?>
 
-    <div class="login-container">
-        <div class="login-header">
-            <h2>💃 ESKUL SENI TARI</h2>
-            <p>Silakan login untuk masuk ke sistem</p>
-        </div>
-
-        <form action="proses_login.php" method="POST">
-            <div class="form-group">
-                <label for="username">ID Pengguna</label>
-                <input type="text" id="username" name="username" placeholder="Masukkan ID Pengguna" required>
+        <form action="" method="POST">
+            <div class="input-group">
+                <label for="username">Nama Pengguna (Username)</label>
+                <input type="text" id="username" name="username" placeholder="Masukkan username Anda..." autocomplete="off" required>
             </div>
 
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" placeholder="Masukkan Password" required>
+            <div class="input-group">
+                <label for="password">Kata Sandi (Password)</label>
+                <input type="password" id="password" name="password" placeholder="Masukkan password Anda..." required>
             </div>
 
-            <button type="submit" class="btn-login">Masuk Sistem</button>
-            
-            <p style="text-align: center; font-size: 13px; color: #666; margin-top: 25px; margin-bottom: 0;">
-                Belum punya akun? <a href="registrasi.php" style="color: #6a4c93; font-weight: bold; text-decoration: none;">Sign Up</a>
-            </p>
+            <button type="submit" name="login" class="btn-login">Masuk Sistem</button>
         </form>
+
+        <div class="login-footer">
+            &copy; 2026 Nyawiji Sukma Studio. All Rights Reserved.
+        </div>
     </div>
-
-    <script>
-        const container = document.getElementById('fallingFlowers');
-        const numberOfFlowers = 25; // Jumlah bunga di halaman login
-
-        for (let i = 0; i < numberOfFlowers; i++) {
-            const flower = document.createElement('div');
-            flower.classList.add('flower');
-            flower.innerText = '🌸';
-            
-            flower.style.left = Math.random() * 100 + 'vw';
-            flower.style.animationDuration = Math.random() * 3 + 3 + 's'; // Santai dan estetik
-            flower.style.animationDelay = Math.random() * 5 + 's';
-            
-            container.appendChild(flower);
-        }
-    </script>
 
 </body>
 </html>
