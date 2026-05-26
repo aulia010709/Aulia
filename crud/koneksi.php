@@ -1,12 +1,10 @@
 <?php
-$host     = "localhost";
-$username = "root"; 
-$password = "";   
-$database = "2526_25db"; 
+$host = "localhost";
+$user = "root";
+$pass = "";
+$db   = "2526_25db"; // Menggunakan nama database asli di komputermu
 
-// Membuat koneksi
-$koneksi = mysqli_connect($host, $username, $password, $database);
-
+$koneksi = mysqli_connect($host, $user, $pass, $db);
 
 if (!$koneksi) {
     die("Koneksi database gagal: " . mysqli_connect_error());

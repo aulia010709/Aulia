@@ -1,302 +1,218 @@
 <?php
-// 1. Memulai session
 session_start();
 
-// 2. Menghubungkan ke database
+// 1. PROTEKSI UTAMA: Cek apakah user sudah login sebagai admin 'aulia'
+if (!isset($_SESSION['username']) || $_SESSION['username'] !== 'aulia') {
+    echo "<script>
+            alert('Akses Ditolak! Anda harus login sebagai admin.');
+            window.location.href = 'index.php';
+          </script>";
+    exit();
+}
+
 include 'koneksi.php';
 
-// Cek apakah ada ID yang dikirim di URL
-if (!isset($_GET['id'])) {
-    echo "<script>alert('ID tidak ditemukan!'); window.location.href='index.php';</script>";
-    exit;
+// Menangkap data id/username yang dikirim dari index.php
+$id = isset($_GET['id']) ? mysqli_real_escape_string($koneksi, $_GET['id']) : '';
+if (empty($id)) {
+    $id = isset($_GET['username']) ? mysqli_real_escape_string($koneksi, $_GET['username']) : '';
 }
 
-$id = $_GET['id'];
+// Ambil data siswa yang mau diedit
+$query = "SELECT * FROM users WHERE username = '$id'";
+$result = mysqli_query($koneksi, $query);
+$data = mysqli_fetch_assoc($result);
 
-// =============================================================
-// KUNCI UTAMA: DETEKTOR OTOMATIS NAMA TABEL NYATA DI DATABASEMU
-// =============================================================
-$nama_tabel = "";
-$ambil_tabel = mysqli_query($koneksi, "SHOW TABLES");
-
-if ($ambil_tabel) {
-    while ($baris_tabel = mysqli_fetch_row($ambil_tabel)) {
-        $tabel_dicoba = $baris_tabel[0];
-        
-        // Cek apakah tabel ini menyimpan data ID yang kita cari (id atau id_anggota)
-        $tes_query = @mysqli_query($koneksi, "SELECT * FROM `$tabel_dicoba` WHERE `id` = '$id' OR `id_anggota` = '$id'");
-        if ($tes_query && mysqli_num_rows($tes_query) > 0) {
-            $nama_tabel = $tabel_dicoba;
-            $result = $tes_query;
-            break; 
-        }
-    }
+if (!$data) {
+    echo "<script>
+            alert('Data tidak ditemukan!');
+            window.location.href = 'index.php';
+          </script>";
+    exit();
 }
 
-// Jika detektor otomatis di atas masih gagal menemukan datamu
-if (empty($nama_tabel) || !$result) {
-    $ambil_tabel_darurat = mysqli_query($koneksi, "SHOW TABLES");
-    if ($ambil_tabel_darurat && mysqli_num_rows($ambil_tabel_darurat) > 0) {
-        $baris_darurat = mysqli_fetch_row($ambil_tabel_darurat);
-        $nama_tabel = $baris_darurat[0]; 
-        $result = mysqli_query($koneksi, "SELECT * FROM `$nama_tabel` WHERE 1 LIMIT 1");
+// Proses update data ketika tombol simpan diklik
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $nama        = mysqli_real_escape_string($koneksi, $_POST['nama']);
+    $kelas       = mysqli_real_escape_string($koneksi, $_POST['kelas']);
+    $jenis_tari  = mysqli_real_escape_string($koneksi, $_POST['jenis_tari']);
+    $jk          = mysqli_real_escape_string($koneksi, $_POST['jk']);
+    $tgl_lahir   = mysqli_real_escape_string($koneksi, $_POST['tgl_lahir']); // Disimpan ke kolom password
+    $email       = mysqli_real_escape_string($koneksi, $_POST['email']);
+
+    // Query update data tanpa kolom alamat supaya tidak bentrok dengan database kamu
+    $update_query = "UPDATE users SET nama='$nama', kelas='$kelas', jenis_tari='$jenis_tari', jk='$jk', password='$tgl_lahir', email='$email' WHERE username='$id'";
+    
+    if (mysqli_query($koneksi, $update_query)) {
+        echo "<script>
+                alert('Data Berhasil Diubah!');
+                window.location.href = 'index.php';
+              </script>";
+        exit();
     } else {
-        die("Gagal total: Tidak ada tabel sama sekali di dalam database '2526_25db' kamu. Silakan import file db_tkj.sql dulu di phpMyAdmin!");
+        echo "<script>alert('Gagal mengubah data! Periksa kembali database Anda.');</script>";
     }
-}
-
-$data = mysqli_fetch_array($result);
-
-// Menentukan nama kolom ID yang aktif
-$kolom_id = isset($data['id']) ? 'id' : (isset($data['id_anggota']) ? 'id_anggota' : '');
-if (empty($kolom_id) && $data) {
-    $kunci_kolom = array_keys($data);
-    $kolom_id = $kunci_kolom[1]; 
 }
 ?>
 
 <!DOCTYPE html>
 <html lang="id">
 <head>
+    <link rel="icon" href="logotari.jpeg" type="image/jpeg">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ubah Data - Eskul Seni Tari</title>
+    <title>Nyawiji Sukma - Ubah Data</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f2f8; /* Latar belakang ungu sangat pudar halus */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        
+        /* Membuat form otomatis berada di rata tengah layar */
+        body { 
+            background-color: #121212; 
+            color: #ffffff; 
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            margin: 0;
-            position: relative;
-            overflow-x: hidden; /* Mencegah scroll horizontal akibat bunga */
+            padding: 20px;
         }
-
-        /* Container Utama Box Putih Elegan */
-        .edit-container {
-            background-color: #ffffff;
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(106, 76, 147, 0.08); /* Bayangan ungu tipis estetik */
+        
+        /* Ukuran form kotak diperkecil menjadi lebih compact/ramping */
+        .form-container { 
+            background-color: #1a1a1a; 
+            border: 1px solid #2a2a2a; 
+            padding: 25px 30px; 
+            border-radius: 15px; 
             width: 100%;
-            max-width: 440px;
-            margin: 30px 20px;
-            z-index: 10; /* Berada di atas bunga berterbangan */
-            position: relative;
-            border: 1px solid rgba(224, 220, 237, 0.6);
+            max-width: 420px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
         }
-
-        .edit-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .edit-header h2 {
-            margin: 0 0 6px 0;
-            color: #6a4c93; 
-            font-size: 24px;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-        }
-
-        .edit-header p {
-            font-size: 12px;
-            color: #a09cb0;
-            margin: 0;
-        }
-
-        /* Form Styling */
-        .form-group {
-            margin-bottom: 18px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #4a4355;
-            font-size: 13px;
-            font-weight: 600;
-        }
-
-        .form-group input, 
-        .form-group select {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1px solid #e2def0;
-            border-radius: 10px;
-            box-sizing: border-box;
-            font-size: 14px;
-            background-color: #faf9fd;
-            color: #333;
-            transition: all 0.3s ease;
-        }
-
-        .form-group input:focus, 
-        .form-group select:focus {
-            border-color: #6a4c93;
-            outline: none;
-            box-shadow: 0 0 0 4px rgba(106, 76, 147, 0.12);
-            background-color: #ffffff;
-        }
-
-        /* Tombol Utama */
-        .btn-submit {
-            width: 100%;
-            padding: 14px;
-            background-color: #6a4c93; 
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 15px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 12px;
-            box-shadow: 0 4px 12px rgba(106, 76, 147, 0.2);
-        }
-
-        .btn-submit:hover {
-            background-color: #543a75;
-            transform: translateY(-1px);
-            box-shadow: 0 6px 15px rgba(106, 76, 147, 0.3);
-        }
-
-        .btn-submit:active {
-            transform: translateY(0);
-        }
-
-        .btn-kembali {
-            display: block;
-            text-align: center;
-            margin-top: 16px;
-            color: #8e8796;
-            text-decoration: none;
-            font-size: 13px;
-            transition: color 0.2s;
-        }
-
-        .btn-kembali:hover {
-            color: #6a4c93;
-            text-decoration: underline;
-        }
-
-        /* ====================================
-           EFEK KELOPAK BUNGA BERTERBANGAN
-           ==================================== */
-        .falling-flowers {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            z-index: 1;
-            pointer-events: none;
-        }
-
-        .flower {
-            position: absolute;
-            background-color: transparent;
+        
+        h2 { 
+            color: #cda22e; 
             font-size: 20px;
-            opacity: 0.7;
-            user-select: none;
-            animation: fall linear infinite;
+            margin-bottom: 20px; 
+            border-left: 4px solid #cda22e; 
+            padding-left: 10px; 
+            letter-spacing: 0.5px;
         }
-
-        @keyframes fall {
-            0% {
-                transform: translateY(-20px) translateX(0) rotate(0deg);
-                opacity: 0.8;
-            }
-            50% {
-                transform: translateY(50vh) translateX(80px) rotate(180deg);
-                opacity: 0.5;
-            }
-            100% {
-                transform: translateY(100vh) translateX(-20px) rotate(360deg);
-                opacity: 0;
-            }
+        
+        .form-group { 
+            margin-bottom: 14px; 
+        }
+        
+        label { 
+            display: block; 
+            margin-bottom: 6px; 
+            color: #aaaaaa; 
+            font-size: 13px;
+        }
+        
+        input[type="text"], 
+        input[type="email"], 
+        input[type="date"], 
+        select { 
+            width: 100%; 
+            padding: 10px 12px; 
+            background-color: #222222; 
+            border: 1px solid #333333; 
+            color: #ffffff; 
+            border-radius: 6px; 
+            font-size: 14px;
+        }
+        
+        input:focus, select:focus {
+            border-color: #cda22e;
+            outline: none;
+        }
+        
+        /* Mengunci input username agar tidak bisa diubah */
+        input:disabled {
+            background-color: #151515;
+            color: #666666;
+            border-color: #222222;
+            cursor: not-allowed;
+        }
+        
+        .btn-submit { 
+            background-color: #cda22e; 
+            color: #000000; 
+            border: none; 
+            width: 100%;
+            padding: 12px; 
+            font-weight: bold; 
+            font-size: 14px;
+            border-radius: 6px; 
+            cursor: pointer; 
+            margin-top: 10px;
+            transition: 0.2s;
+        }
+        
+        .btn-submit:hover {
+            background-color: #b38d24;
+        }
+        
+        .btn-back { 
+            display: block; 
+            text-align: center;
+            margin-top: 15px; 
+            color: #888888; 
+            text-decoration: none; 
+            font-size: 13px; 
+        }
+        .btn-back:hover {
+            color: #cda22e;
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
 
-    <div class="falling-flowers" id="fallingFlowers"></div>
-
-    <div class="edit-container">
-        <div class="edit-header">
-            <h2>📝 Ubah Data Anggota</h2>
-            <p>Membaca otomatis dari tabel: <b><?php echo $nama_tabel; ?></b></p>
+<div class="form-container">
+    <h2>Ubah Data Anggota</h2>
+    <form method="POST" action="">
+        
+        <div class="form-group">
+            <label>ID Pengguna (Username)</label>
+            <input type="text" value="<?php echo htmlspecialchars($data['username']); ?>" disabled>
+        </div>
+        
+        <div class="form-group">
+            <label>Nama Lengkap</label>
+            <input type="text" name="nama" value="<?php echo htmlspecialchars($data['nama']); ?>" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Kelas</label>
+            <input type="text" name="kelas" value="<?php echo htmlspecialchars($data['kelas']); ?>" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Spesialisasi Tari</label>
+            <input type="text" name="jenis_tari" value="<?php echo htmlspecialchars($data['jenis_tari']); ?>" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Gender</label>
+            <select name="jk" required>
+                <option value="Perempuan" <?php if($data['jk'] == 'Perempuan') echo 'selected'; ?>>Perempuan</option>
+                <option value="Laki-laki" <?php if($data['jk'] == 'Laki-laki') echo 'selected'; ?>>Laki-laki</option>
+            </select>
         </div>
 
-        <form action="proses_edit.php" method="POST">
-            
-            <input type="hidden" name="id" value="<?php echo isset($data[$kolom_id]) ? $data[$kolom_id] : $id; ?>">
-
-            <div class="form-group">
-                <label>Nama Lengkap</label>
-                <input type="text" name="nama" value="<?php echo isset($data['nama']) ? $data['nama'] : ''; ?>" placeholder="Masukkan nama lengkap" required>
-            </div>
-
-            <div class="form-group">
-                <label>Kelas</label>
-                <input type="text" name="kelas" value="<?php echo isset($data['kelas']) ? $data['kelas'] : ''; ?>" placeholder="Contoh: XI TJKT 1" required>
-            </div>
-
-            <div class="form-group">
-                <label>Spesialisasi Tari</label>
-                <select name="spesialisasi" required>
-                    <option value="Tradisional" <?php echo (isset($data['spesialisasi']) && $data['spesialisasi'] == 'Tradisional') ? 'selected' : ''; ?>>Tradisional</option>
-                    <option value="Modern" <?php echo (isset($data['spesialisasi']) && $data['spesialisasi'] == 'Modern') ? 'selected' : ''; ?>>Modern</option>
-                    <option value="Kontemporer" <?php echo (isset($data['spesialisasi']) && $data['spesialisasi'] == 'Kontemporer') ? 'selected' : ''; ?>>Kontemporer</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>Gender</label>
-                <select name="gender" required>
-                    <option value="Laki-laki" <?php echo (isset($data['gender']) && $data['gender'] == 'Laki-laki') ? 'selected' : ''; ?>>Laki-laki</option>
-                    <option value="Perempuan" <?php echo (isset($data['gender']) && $data['gender'] == 'Perempuan') ? 'selected' : ''; ?>>Perempuan</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>ID Pengguna (Username)</label>
-                <input type="text" name="username" value="<?php echo isset($data['username']) ? $data['username'] : ''; ?>" placeholder="Masukkan username" required>
-            </div>
-
-            <div class="form-group">
-                <label>Email</label>
-                <input type="email" name="email" value="<?php echo isset($data['email']) ? $data['email'] : ''; ?>" placeholder="nama@email.com" required>
-            </div>
-
-            <button type="submit" class="btn-submit">Simpan Perubahan</button>
-            <a href="index.php" class="btn-kembali">← Batal dan Kembali</a>
-        </form>
-    </div>
-
-    <script>
-        const container = document.getElementById('fallingFlowers');
-        const numberOfFlowers = 30; // Jumlah kelopak bunga di layar
-
-        for (let i = 0; i < numberOfFlowers; i++) {
-            const flower = document.createElement('div');
-            flower.classList.add('flower');
-            flower.innerText = '🌸';
-            
-            // Mengacak posisi sebaran kiri-kanan bunga
-            flower.style.left = Math.random() * 100 + 'vw';
-            
-            // Mengacak kecepatan jatuh bunga agar terlihat alami (antara 4 sampai 8 detik)
-            flower.style.animationDuration = Math.random() * 4 + 4 + 's'; 
-            
-            // Mengacak waktu tunggu kemunculan awal bunga
-            flower.style.animationDelay = Math.random() * 6 + 's';
-            
-            container.appendChild(flower);
-        }
-    </script>
+        <div class="form-group">
+            <label>Tanggal Lahir</label>
+            <input type="date" name="tgl_lahir" value="<?php echo htmlspecialchars($data['password']); ?>" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" name="email" value="<?php echo htmlspecialchars($data['email']); ?>" required>
+        </div>
+        
+        <button type="submit" class="btn-submit">Simpan Perubahan</button>
+        <a href="index.php" class="btn-back">← Kembali ke Tabel</a>
+    </form>
+</div>
 
 </body>
 </html>

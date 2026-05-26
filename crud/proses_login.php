@@ -1,36 +1,53 @@
 <?php
-// 1. Memulai session untuk menyimpan status login dan hak akses
 session_start();
 
-// 2. Memeriksa apakah data dikirim dari form login
-if (isset($_POST['username']) && isset($_POST['password'])) {
-    
-    // Mengambil data yang diketik di halaman login
-    $username = $_POST['username'];
-    $password = $_POST['password'];
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    include 'koneksi.php';
 
-    // 3. Memeriksa apakah username dan password cocok
-    if ($username === 'aulia' && $password === 'aulia123') {
-        
-        // Simpan status login ke komputer
-        $_SESSION['login'] = true;
-        $_SESSION['username'] = $username;
-        
-        // KUNCI JAWABAN: Tambahkan role admin di sini agar file hapus.php bisa mengizinkanmu masuk
-        $_SESSION['role'] = 'admin'; 
+    $username = mysqli_real_escape_string($koneksi, $_POST['username']);
+    $password = mysqli_real_escape_string($koneksi, $_POST['password']);
 
-        // Langsung pindah ke halaman utama dashboard
-        header("Location: index.php");
-        exit;
+    // 1. JALUR KHUSUS UNTUK ADMIN (AULIA)
+    if ($username === '2526_25' && $password === 'aulia079') {
+        $_SESSION['username'] = 'aulia';
+        $_SESSION['role']     = 'admin'; // Menandakan bahwa ini adalah admin
+        
+        echo "<script>
+                alert('Login Berhasil! Selamat Datang Admin Aulia.');
+                window.location.href = 'index.php';
+              </script>";
+        exit();
+    }
+
+    // 2. JALUR UNTUK SISWA / USER BIASA (MENGAMBIL DARI DATABASE)
+    $query = "SELECT * FROM users WHERE username='$username'";
+    $result = mysqli_query($koneksi, $query);
+
+    if (mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+
+        if ($password === $row['password']) {
+            $_SESSION['username'] = $row['username'];
+            $_SESSION['role']     = 'siswa'; // Menandakan bahwa ini adalah siswa biasa
+
+            echo "<script>
+                    alert('Login Berhasil! Selamat Datang " . htmlspecialchars($row['username']) . ".');
+                    window.location.href = 'index.php';
+                  </script>";
+            exit();
+        } else {
+            echo "<script>
+                    alert('Gagal Masuk: Password Salah!');
+                    window.location.href = 'login.php';
+                  </script>";
+            exit();
+        }
     } else {
         echo "<script>
-                alert('Username atau Password Salah!');
+                alert('Gagal Masuk: Username tidak ditemukan!');
                 window.location.href = 'login.php';
               </script>";
-        exit;
+        exit();
     }
-} else {
-    header("Location: login.php");
-    exit;
 }
 ?>

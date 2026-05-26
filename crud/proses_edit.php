@@ -1,16 +1,41 @@
 <?php
+session_start();
+
+// PENGUNCIAN LOOSE: Selama ada session username (kamu sudah login), langsung loloskan!
+if (!isset($_SESSION['username'])) {
+    die("Akses Ditolak! Silakan login terlebih dahulu.");
+}
+
 include 'koneksi.php';
 
-// Menangkap data dari form edit
-$id            = $_POST['id'];
-$nama          = $_POST['nama'];
-$alamat        = $_POST['alamat'];
-$tempat_lahir  = $_POST['tempat_lahir'];
-$tanggal_lahir = $_POST['tanggal_lahir'];
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $username      = mysqli_real_escape_string($koneksi, $_POST['username']);
+    $nama          = mysqli_real_escape_string($koneksi, $_POST['nama']);
+    $kelas         = mysqli_real_escape_string($koneksi, $_POST['kelas']);
+    $jenis_tari    = mysqli_real_escape_string($koneksi, $_POST['jenis_tari']);
+    $jk            = mysqli_real_escape_string($koneksi, $_POST['jk']);
+    $tanggal_lahir = mysqli_real_escape_string($koneksi, $_POST['tanggal_lahir']);
+    $email         = mysqli_real_escape_string($koneksi, $_POST['email']);
 
-// Query untuk memperbarui (UPDATE) data di database berdasarkan ID
-$query = mysqli_query($koneksi, "UPDATE biodata_guru SET nama='$nama', alamat='$alamat', tempat_lahir='$tempat_lahir', tanggal_lahir='$tanggal_lahir' WHERE id='$id'");
+    // Mengupdate data siswa, dan menyimpan tanggal lahir ke dalam kolom password
+    $query = "UPDATE users SET 
+                nama = '$nama', 
+                kelas = '$kelas', 
+                jenis_tari = '$jenis_tari', 
+                jk = '$jk', 
+                password = '$tanggal_lahir', 
+                email = '$email' 
+              WHERE username = '$username'";
 
-// Mengalihkan halaman kembali ke index.php
-header("location:index.php");
+    $execute = mysqli_query($koneksi, $query);
+
+    if ($execute) {
+        echo "<script>
+                alert('Data berhasil diperbarui!');
+                window.location.href='index.php';
+              </script>";
+    } else {
+        echo "Gagal memperbarui data: " . mysqli_error($koneksi);
+    }
+}
 ?>
