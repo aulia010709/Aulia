@@ -57,10 +57,13 @@ include 'koneksi.php';
                     <option value="X TJKT 1">X TJKT 1</option>
                     <option value="X TJKT 2">X TJKT 2</option>
                     <option value="X TJKT 3">X TJKT 3</option>
-                    <option value="X TJKT 4">X TJKT 4</option>
-                    <option value="XI TJKT 1">XI TJKT 1</option>
-                    <option value="XI TJKT 2">XI TJKT 2</option>
-                    <option value="XII TJKT 1">XII TJKT 1</option>
+                    <option value="X TJKT 4">XI TJKT 1</option>
+                    <option value="XI TJKT 1">XI TJKT 2</option>
+                    <option value="XI TJKT 2">XI TJKT 3</option>
+                    <option value="XII TJKT 1">XI TJKT 4</option>
+                    <option value="X TJKT 4">XII TJKT 1</option>
+                    <option value="XI TJKT 1">XII TJKT 2</option>
+                    <option value="XI TJKT 2">XII TJKT 3</option>
                 </select>
             </div>
 

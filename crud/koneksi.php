@@ -1,8 +1,8 @@
 <?php
 $host = "localhost";
-$user = "root";      // Di localhost laptop, standarnya adalah 'root'
-$pass = "";          // Di localhost laptop, password-nya dikosongkan saja
-$db   = "db_tkj";    // Sesuaikan dengan nama database yang kamu buat di phpMyAdmin laptop
+$user = "root";          // Di laptop/XAMPP selalu pakai root
+$pass = "";              // Di laptop/XAMPP password-nya dikosongkan
+$db   = "2526_25db";     // Nama database sesuai di phpMyAdmin laptopmu
 
 $koneksi = mysqli_connect($host, $user, $pass, $db);
 
