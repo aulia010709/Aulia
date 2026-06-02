@@ -1,10 +1,12 @@
 <?php
-// Sesuaikan isi di dalam tanda kurung dengan data servermu
-$koneksi = mysqli_connect("localhost", "username_kamu", "password_kamu", "nama_database_kamu");
+$host = "localhost";
+$user = "root";      // Di localhost laptop, standarnya adalah 'root'
+$pass = "";          // Di localhost laptop, password-nya dikosongkan saja
+$db   = "db_tkj";    // Sesuaikan dengan nama database yang kamu buat di phpMyAdmin laptop
 
-// TAMBAHKAN KODE INI DI BAWAHNYA:
-if (mysqli_connect_errno()) {
-    echo "Gagal terhubung ke database: " . mysqli_connect_error();
-    exit();
+$koneksi = mysqli_connect($host, $user, $pass, $db);
+
+if (!$koneksi) {
+    die("Koneksi database gagal: " . mysqli_connect_error());
 }
 ?>
